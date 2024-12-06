@@ -6,9 +6,9 @@ import scipy
 from scipy import optimize
 
 
-BE_4He = -7.07391560*4
-BE_12C = -7.68014460*12
-BE_16O = -7.97620720*16
+BE_4He = 7.07391560*4
+BE_12C = 7.68014460*12
+BE_16O = 7.97620720*16
 BE_array = np.array([BE_4He,BE_12C,BE_16O])
 Nuclei_A = np.array([4,12,16])
 
@@ -246,7 +246,7 @@ print(f"Hartree Fock for A={Nnucleons}")
 Guess = Create_VMatrix(Nnucleons,States,50,-50)
 scipy.optimize.minimize(Simulation(Guess,Nnucleons, States),0, method='Nelder-Mead')
 """
-Nnucleons=16
+Nnucleons= 16
 Diff_old = 30
 States = GenerateSingleParticleStates(Nnucleons)
 GenerateTwoParticleStates(Nnucleons,States)

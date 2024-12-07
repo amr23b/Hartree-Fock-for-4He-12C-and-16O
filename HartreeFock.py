@@ -6,11 +6,12 @@ import scipy
 from scipy import optimize
 
 
-BE_4He = 7.07391560*4
-BE_12C = 7.68014460*12
-BE_16O = 7.97620720*16
+BE_4He = -7.07391560*4
+BE_12C = -7.68014460*12
+BE_16O = -7.97620720*16
 BE_array = np.array([BE_4He,BE_12C,BE_16O])
 Nuclei_A = np.array([4,12,16])
+Nuclei_Name = np.array(["4He","12C","16O"])
 
 
 def GenerateSingleParticleStates(Nnucleons):
@@ -73,14 +74,13 @@ def GenerateSingleParticleH(Nnucleons, States):
     hw = 51.5*math.pow(Nnucleons,-1/3) #MeV
     i=0
     while i<Nnucleons:
-        SingleParticleHamiltonian[i][i]=(2*States[i][0]+States[i][1]+1.5)*hw
+        SingleParticleHamiltonian[i][i]=(2*States[i][0]+States[i][1]+1.5)*hw-50
         i+=1
     return SingleParticleHamiltonian
 
 
-#Creates Random Density Matrix p
+#Creates Identity Density Matrix p
 def Create_DensityMatrix(Nnucleons):
-    p = 2*np.random.random_sample((Nnucleons,Nnucleons))-1
     p = (1/16)*np.identity(Nnucleons)
 
     #Normalize initial density matrix
@@ -96,11 +96,8 @@ def Create_DensityMatrix(Nnucleons):
     return p
 
 #Make Random 4-D Interaction Matrix between two body states
-def Create_VMatrix(Nnucleons, States, max, min):
+def Create_VMatrix(Nnucleons, States, max, min, V_l0, V_l1_j15, V_l1_j05):
     V_as = np.zeros([Nnucleons,Nnucleons,Nnucleons,Nnucleons])
-    V_l0 = 0.0
-    V_l1_j05 = 0.0
-    V_l1_j15 = 0.0
     i=0
     while i<Nnucleons:
         j=0
@@ -115,7 +112,7 @@ def Create_VMatrix(Nnucleons, States, max, min):
                             continue
                         if (i==k) & (j==m):
                             if States[i][1]==0:
-                                if V_l0 == 0:
+                                if (V_l0 == 0):
                                     V_l0 = (max-min)*np.random.random_sample()+min
                                 else:
                                     V_as[i][j][k][m] = V_l0
@@ -131,7 +128,7 @@ def Create_VMatrix(Nnucleons, States, max, min):
                                     else:
                                         V_as[i][j][k][m] = V_l1_j15
                         else:
-                            V_as[i][j][k][m] = 0
+                            V_as[i][j][k][m] = 2*np.random.random_sample()-1
                         V_as[j][i][k][m] = -V_as[i][j][k][m]
                         V_as[j][i][m][k] = V_as[i][j][k][m]
                         V_as[i][j][m][k] = -V_as[i][j][k][m]
@@ -238,50 +235,52 @@ def Simulation(V_as, Nnucleons, States):
     for i in range(len(Energies)):
         BE+=Energies[i]
     return BE
-"""
-Nnucleons=4
-States = GenerateSingleParticleStates(Nnucleons)
-V_as = Create_VMatrix(Nnucleons,States,50,-50)
-print(f"Hartree Fock for A={Nnucleons}")
-Guess = Create_VMatrix(Nnucleons,States,50,-50)
-scipy.optimize.minimize(Simulation(Guess,Nnucleons, States),0, method='Nelder-Mead')
-"""
-Nnucleons= 16
-Diff_old = 30
-States = GenerateSingleParticleStates(Nnucleons)
-GenerateTwoParticleStates(Nnucleons,States)
-SingleParticleHamiltonian = GenerateSingleParticleH(Nnucleons,States)
-Rho = Create_DensityMatrix(Nnucleons)
-iter=1
-V_as_old = np.zeros([Nnucleons,Nnucleons,Nnucleons,Nnucleons])
-V_as_new = np.zeros([Nnucleons,Nnucleons,Nnucleons,Nnucleons])
-while iter<999:
-    print(f"iteration:{iter}")
-    if (iter==1):
-        V_as = Create_VMatrix(Nnucleons,States,Diff_old,-Diff_old)
-    BE = Simulation(V_as,Nnucleons,States)
-    #for i in range(Nnucleons):
-    #    if (HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian)[i]<=0) or (BE<=0):
-    #        V_as = V_as_old + Create_VMatrix(Nnucleons,States,(np.abs(Diff_old)),-(np.abs(Diff_old)))
-    #        i=0
-    print(f"Binding Energy of A={Nnucleons} is: {BE}")
-    Diff = BE-BE_array[2]
-    print(Diff)
-    if (np.abs(Diff)>0.01):
-        if(np.abs(Diff)>np.abs(Diff_old)): 
-            V_as = V_as_old + Create_VMatrix(Nnucleons,States,(np.abs(Diff_old)),-(np.abs(Diff_old)))
+
+
+V_array = np.array([0.0,0.0,0.0])
+for N_iter in range (len(Nuclei_A)):
+    Nnucleons= Nuclei_A[N_iter]
+    Diff_old = 10.0
+    States = GenerateSingleParticleStates(Nnucleons)
+    GenerateTwoParticleStates(Nnucleons,States)
+    SingleParticleHamiltonian = GenerateSingleParticleH(Nnucleons,States)
+    Rho = Create_DensityMatrix(Nnucleons)
+    iter=1
+    V_as_old = 0.0
+    V_as_new = 0.0
+    while iter<999:
+        print(f"iteration:{iter}")
+        if(iter==1): V_array[N_iter] = 2*Diff_old*np.random.random_sample()-(Diff_old)
+        V_as_new = V_array[N_iter]
+        V_as = Create_VMatrix(Nnucleons,States,1,-1,V_array[0],V_array[1],V_array[2])
+        BE = Simulation(V_as,Nnucleons,States)
+        print(f"Binding Energy of A={Nnucleons} is: {BE}")
+        Diff = BE-BE_array[N_iter]
+        print(Diff)
+        if (np.abs(Diff)>0.001):
+            if(np.abs(Diff)>np.abs(Diff_old)): 
+                V_array[N_iter] = 2*Diff_old*np.random.random_sample()+(V_as_old-Diff_old)
+                iter+=1
+                print(V_array[N_iter])
+                continue
+            else:
+                V_as_old = V_array[N_iter]
+                V_array[N_iter] = 2*Diff*np.random.random_sample()+(V_as_new-Diff)
+        if (np.abs(Diff)<=0.001):
             print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
-            iter+=1
-            continue
-        else:
-            V_as_new = V_as + Create_VMatrix(Nnucleons,States,(np.abs(Diff)),-(np.abs(Diff)))
-    #V_as_new[i][j][k][m] = Create_VMatrix(Nnucleons,States,V_as[i][j][k][m]+(50-iter/20),V_as[i][j][k][m]-(50-iter/20))[i][j][k][m]
-    if (np.abs(Diff)<=0.01):
+            break
+
         print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
-        #print(V_as)
-        break
-    V_as_old = V_as
-    V_as = V_as_new
+        Diff_old = Diff
+        iter+=1
+    print(V_array)
+
+for i in range (len(Nuclei_A)):
+    Nnucleons= Nuclei_A[i]
+    States = GenerateSingleParticleStates(Nnucleons)
+    GenerateTwoParticleStates(Nnucleons,States)
+    SingleParticleHamiltonian = GenerateSingleParticleH(Nnucleons,States)
+    Rho = Create_DensityMatrix(Nnucleons)
+    V_as = Create_VMatrix(Nnucleons,States,1,-1,V_array[0],V_array[1],V_array[2])
+    print(f"Eigenenergies for {Nuclei_Name[i]}:")
     print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
-    Diff_old = Diff
-    iter+=1

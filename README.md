@@ -6,11 +6,14 @@ This is the output from running the code listing the Single Particle States, Two
 =========================================================================================================================================
 
 Single Particle States of 4He in form [n,l,j,mj,tz]:
+
 [[ 0.   0.   0.5 -0.5 -0.5]
  [ 0.   0.   0.5 -0.5  0.5]
  [ 0.   0.   0.5  0.5 -0.5]
  [ 0.   0.   0.5  0.5  0.5]]
+ 
 Two Particle States of 4He Coupled to 0+:
+
 [[[ 0.   0.   0.5 -0.5 -0.5]
   [ 0.   0.   0.5  0.5 -0.5]]
 
@@ -35,10 +38,12 @@ Two Particle States of 4He Coupled to 0+:
  [[ 0.   0.   0.5  0.5  0.5]
   [ 0.   0.   0.5 -0.5  0.5]]]
 Eigenenergies for 4He:
+
 [-7.07386792 -7.07386792 -7.07386792 -7.07386792]
 4He Total Binding Energy: -28.29547169136173
 
-Single Particle States of 12C in form [n,l,j,mj,tz]: 
+Single Particle States of 12C in form [n,l,j,mj,tz]:
+
 [[ 0.   0.   0.5 -0.5 -0.5]
  [ 0.   0.   0.5 -0.5  0.5]
  [ 0.   0.   0.5  0.5 -0.5]
@@ -52,6 +57,7 @@ Single Particle States of 12C in form [n,l,j,mj,tz]:
  [ 0.   1.   1.5  1.5 -0.5]
  [ 0.   1.   1.5  1.5  0.5]]
 Two Particle States of 12C Coupled to 0+:
+
 [[[ 0.   0.   0.5 -0.5 -0.5]
   [ 0.   0.   0.5  0.5 -0.5]]
 
@@ -124,12 +130,14 @@ Two Particle States of 12C Coupled to 0+:
  [[ 0.   1.   1.5  1.5  0.5]
   [ 0.   1.   1.5 -1.5  0.5]]]
 Eigenenergies for 12C:
+
 [-21.99627302 -21.99627302 -21.99627302 -21.99627302  -0.52217442
   -0.52217442  -0.52217442  -0.52217442  -0.52217442  -0.52217442
   -0.52217442  -0.52217442]
 12C Total Binding Energy: -92.16248744588567
 
 Single Particle States of 16O in form [n,l,j,mj,tz]: 
+
 [[ 0.   0.   0.5 -0.5 -0.5]
  [ 0.   0.   0.5 -0.5  0.5]
  [ 0.   0.   0.5  0.5 -0.5]
@@ -252,6 +260,7 @@ Eigenenergies for 16O:
 Optimized Interaction Matrix Elements in form (State a, State b, State c, State d, <ab|V_as|cd>):
 
 [ 0.   0.   0.5 -0.5 -0.5],[ 0.   0.   0.5  0.5 -0.5],[ 0.   0.   0.5 -0.5 -0.5],[ 0.   0.   0.5  0.5 -0.5],V=-2.8691592375149555
+
 [ 0.   0.   0.5 -0.5 -0.5],[ 0.   0.   0.5  0.5 -0.5],[ 0.   0.   0.5  0.5 -0.5],[ 0.   0.   0.5 -0.5 -0.5],V=2.8691592375149555
 [ 0.   0.   0.5 -0.5 -0.5],[0.  0.  0.5 0.5 0.5],[ 0.   0.   0.5 -0.5 -0.5],[0.  0.  0.5 0.5 0.5],V=-2.8691592375149555
 [ 0.   0.   0.5 -0.5 -0.5],[0.  0.  0.5 0.5 0.5],[0.  0.  0.5 0.5 0.5],[ 0.   0.   0.5 -0.5 -0.5],V=2.8691592375149555

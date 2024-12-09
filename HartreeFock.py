@@ -95,7 +95,7 @@ def Create_DensityMatrix(Nnucleons):
         i+=1
     return p
 
-#Make Random 4-D Interaction Matrix between two body states
+#Create 4-D Interaction Matrix between two body states
 def Create_VMatrix(Nnucleons, States, max, min, V_l0, V_l1_j15, V_l1_j05):
     V_as = np.zeros([Nnucleons,Nnucleons,Nnucleons,Nnucleons])
     i=0
@@ -128,7 +128,7 @@ def Create_VMatrix(Nnucleons, States, max, min, V_l0, V_l1_j15, V_l1_j05):
                                     else:
                                         V_as[i][j][k][m] = V_l1_j15
                         else:
-                            V_as[i][j][k][m] = 2*np.random.random_sample()-1
+                            V_as[i][j][k][m] = 0
                         V_as[j][i][k][m] = -V_as[i][j][k][m]
                         V_as[j][i][m][k] = V_as[i][j][k][m]
                         V_as[i][j][m][k] = -V_as[i][j][k][m]
@@ -145,25 +145,9 @@ def Create_VMatrix(Nnucleons, States, max, min, V_l0, V_l1_j15, V_l1_j05):
                 k+=1
             j+=1
         i+=1
-    """"
-    i=0
-    while i<Nnucleons:
-        j=0
-        while j<Nnucleons:
-            k=0
-            while k<Nnucleons:
-                m=0
-                while m<Nnucleons:
-                    if V_as[i][j][k][m]!=0:
-                        print(f"({States[i]},{States[j]},{States[k]},{States[m]},{V_as[i][j][k][m]})")
-                    m+=1
-                k+=1
-            j+=1
-        i+=1
-    """
     return V_as
 
-
+#Hartree Fock Algorithm
 def HartreeFock(n_iter,Nnucleons,Rho,V_as,SingleParticleHamiltonian):
     q=0
     while q<n_iter:
@@ -183,7 +167,6 @@ def HartreeFock(n_iter,Nnucleons,Rho,V_as,SingleParticleHamiltonian):
                 U_HF[i][j] = Sum
                 j+=1
             i+=1
-        #print(U_HF)
         H_HF = U_HF+SingleParticleHamiltonian
         eigenvalues, eigenvectors = np.linalg.eig(H_HF)
 
@@ -192,7 +175,6 @@ def HartreeFock(n_iter,Nnucleons,Rho,V_as,SingleParticleHamiltonian):
             Eigenvalue_Matrix = np.array([eigenvalues])
         else:
             Eigenvalue_Matrix = np.append(Eigenvalue_Matrix,[eigenvalues],0)
-        #print(f"current iteration: {q+1}")
 
         #Test for Eigenenergy Convergence
         if q>0:
@@ -201,8 +183,7 @@ def HartreeFock(n_iter,Nnucleons,Rho,V_as,SingleParticleHamiltonian):
             while h<Nnucleons:
                 E_Sum+=np.abs(Eigenvalue_Matrix[q][h]-Eigenvalue_Matrix[q-1][h])/Nnucleons
                 h+=1
-            #print(f"Average Energy Change: {E_Sum}")
-            if E_Sum<5e-15:
+            if E_Sum<1e-15:
                 break
     
         #Make new Density Matrix Rho
@@ -213,18 +194,17 @@ def HartreeFock(n_iter,Nnucleons,Rho,V_as,SingleParticleHamiltonian):
                 for a in range(len(eigenvectors)):
                     DensityMatrixElement += eigenvectors[y][a]*eigenvectors[z][a]
                 Rho[y][z] = DensityMatrixElement
-        #print(Rho)
         q+=1
-    #print(eigenvalues)
-    #print(eigenvectors)
     return eigenvalues
 
+#Calculate Binding Energy from Hartree Fock Eigenenergies
 def BindingEnergy(Energies):
     sum1 = 0.0
     for i in range(len(Energies)):
         sum1+=Energies[i]
     return sum1
 
+#Runs Complete Hartree Fock Method and returns binding energy
 def Simulation(V_as, Nnucleons, States):
     States = GenerateSingleParticleStates(Nnucleons)
     GenerateTwoParticleStates(Nnucleons,States)
@@ -236,7 +216,7 @@ def Simulation(V_as, Nnucleons, States):
         BE+=Energies[i]
     return BE
 
-
+#Optimization of V_Matrix to match Experimental Binding Energies
 V_array = np.array([0.0,0.0,0.0])
 for N_iter in range (len(Nuclei_A)):
     Nnucleons= Nuclei_A[N_iter]
@@ -249,38 +229,59 @@ for N_iter in range (len(Nuclei_A)):
     V_as_old = 0.0
     V_as_new = 0.0
     while iter<999:
-        print(f"iteration:{iter}")
-        if(iter==1): V_array[N_iter] = 2*Diff_old*np.random.random_sample()-(Diff_old)
+        #print(f"iteration:{iter}")
+        if(iter==1): 
+            V_array[N_iter] = 2*Diff_old*np.random.random_sample()-(Diff_old)
         V_as_new = V_array[N_iter]
         V_as = Create_VMatrix(Nnucleons,States,1,-1,V_array[0],V_array[1],V_array[2])
         BE = Simulation(V_as,Nnucleons,States)
-        print(f"Binding Energy of A={Nnucleons} is: {BE}")
+        if(iter==1):
+            BE_Convergence = np.array([BE])
+        else:
+            BE_Convergence = np.append(BE_Convergence,[BE],0)
+        print(f"at iteration: {iter} Binding Energy of {Nuclei_Name[N_iter]} is: {BE}")
         Diff = BE-BE_array[N_iter]
-        print(Diff)
-        if (np.abs(Diff)>0.001):
+        #print(Diff)
+        if (np.abs(Diff)>1e-3):
             if(np.abs(Diff)>np.abs(Diff_old)): 
                 V_array[N_iter] = 2*Diff_old*np.random.random_sample()+(V_as_old-Diff_old)
                 iter+=1
-                print(V_array[N_iter])
+                #print(V_array[N_iter])
                 continue
             else:
                 V_as_old = V_array[N_iter]
                 V_array[N_iter] = 2*Diff*np.random.random_sample()+(V_as_new-Diff)
-        if (np.abs(Diff)<=0.001):
+        if (np.abs(Diff)<=1e-3):
             print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
+            #for h in range(len(BE_Convergence)):
+                #print(BE_Convergence[h])
             break
 
-        print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
+        #print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
         Diff_old = Diff
         iter+=1
-    print(V_array)
+    #print(V_array)
 
+#Prints Final Eigenenergies from Optimized Potential Matrix for 4He, 12C, and 16O Simultaneously
+print("RESULTS!")
 for i in range (len(Nuclei_A)):
     Nnucleons= Nuclei_A[i]
     States = GenerateSingleParticleStates(Nnucleons)
-    GenerateTwoParticleStates(Nnucleons,States)
+    TwoParticleStates = GenerateTwoParticleStates(Nnucleons,States)
     SingleParticleHamiltonian = GenerateSingleParticleH(Nnucleons,States)
     Rho = Create_DensityMatrix(Nnucleons)
     V_as = Create_VMatrix(Nnucleons,States,1,-1,V_array[0],V_array[1],V_array[2])
+    print(f"Single Particle States of {Nuclei_Name[i]} in form [n,l,j,mj,tz]: \n{States}")
+    print(f"Two Particle States of {Nuclei_Name[i]} Coupled to 0+: \n{TwoParticleStates}")
     print(f"Eigenenergies for {Nuclei_Name[i]}:")
     print(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))
+    print(f"{Nuclei_Name[i]} Total Binding Energy: {sum(HartreeFock(10,Nnucleons,Rho,V_as,SingleParticleHamiltonian))}")
+    print("")
+    if i==2: print("Optimized Interaction Matrix Elements in form (State a, State b, State c, State d, <ab|V_as|cd>):")
+    if i==2:
+        for a in range(Nnucleons):
+            for b in range(Nnucleons):
+                for c in range(Nnucleons):
+                    for d in range(Nnucleons):
+                        if V_as[a][b][c][d] != 0:
+                            print(f"{States[a]},{States[b]},{States[c]},{States[d]},V={V_as[a][b][c][d]}")

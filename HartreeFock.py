@@ -2,8 +2,6 @@ import numpy as np
 import array 
 from numpy import linalg as linalg
 import math
-import scipy      
-from scipy import optimize
 
 
 BE_4He = -7.07391560*4
@@ -106,7 +104,7 @@ def Create_VMatrix(Nnucleons, States, max, min, V_l0, V_l1_j15, V_l1_j05):
             while k<Nnucleons:
                 m=0
                 while m<Nnucleons:
-                    if (States[i][1]==States[j][1]) and (States[i][2]==States[j][2]) and ((States[i][3]+States[j][3])==0) and (States[k][1]==States[m][1]) and (States[k][2]==States[m][2]) and ((States[k][3]+States[m][3])==0) and ((States[i][4]+States[j][4])==(States[k][4]+States[m][4])):
+                    if (States[i][1]==States[j][1]) and (States[i][2]==States[j][2]) and ((States[i][3]+States[j][3])==0) and (States[k][1]==States[m][1]) and (States[k][2]==States[m][2]) and ((States[k][3]+States[m][3])==0):
                         if V_as[i][j][k][m] != 0: 
                             m+=1
                             continue
